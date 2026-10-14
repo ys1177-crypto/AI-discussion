@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI와 우리의 미래</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --panel:#ffffff; --ink:#1d1f24; --muted:#6b6f78; --line:#e2ded5;
+  --accent:#2f5d8a; --accent-soft:#e6eef6;
+  --doom:#c8455b; --doom-soft:#fbe9ec;
+  --hope:#c98a00; --hope-soft:#fdf3d6;
+  --ok:#2e7d5b; --radius:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#16181d; --panel:#1f2228; --ink:#eceae4; --muted:#9ca1ab; --line:#33373f;
+    --accent:#7fb0e0; --accent-soft:#22303f;
+    --doom:#ec7d8f; --doom-soft:#3a2328;
+    --hope:#f0bf4a; --hope-soft:#3a3220;
+    --ok:#6cc59c;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{line-height:1.3;margin:0}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
+.brand h1{font-size:19px}
+.brand .sub{font-size:13px;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.group-in{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.group-in input{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.timer{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 12px}
+.timer #tdisp{font-variant-numeric:tabular-nums;font-weight:700;min-width:52px}
+.timer.done #tdisp{color:var(--doom)}
+.timer button{border:none;background:var(--accent);color:#fff;border-radius:999px;padding:4px 12px;font-size:13px}
+.timer button.ghost{background:transparent;color:var(--muted);padding:4px 8px}
+.menu{position:relative}
+.menu summary{list-style:none;cursor:pointer;padding:6px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+.menu summary::-webkit-details-marker{display:none}
+.menu[open] .menu-body{display:flex}
+.menu-body{display:none;position:absolute;right:0;top:calc(100% + 6px);flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;min-width:190px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.menu-body button,.menu-body label{display:block;text-align:left;border:none;background:none;padding:8px 10px;border-radius:6px;font-size:14px;cursor:pointer}
+.menu-body button:hover,.menu-body label:hover{background:var(--accent-soft)}
+.menu-body .danger{color:var(--doom)}
+
+/* step nav */
+nav#steps{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:57px;z-index:15;scrollbar-width:thin}
+nav#steps button{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px;font-size:14px;white-space:nowrap}
+nav#steps button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+nav#steps button .m{opacity:.7;font-size:12px;margin-left:4px}
+@media (max-width:720px){ .top{position:static} nav#steps{top:0} }
+.seg{display:inline-flex;border:1px solid var(--accent);border-radius:999px;overflow:hidden}
+.seg button{border:none;background:var(--panel);color:var(--accent);padding:6px 14px;font-size:14px;font-weight:700}
+.seg button.on{background:var(--accent);color:#fff}
+.choose{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:720px){.choose{grid-template-columns:1fr}}
+.choose button{text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:var(--radius);padding:20px}
+.choose button:hover{border-color:var(--accent)}
+.choose b{display:block;font-size:20px;margin-bottom:4px}
+.choose .who{color:var(--accent);font-weight:700;font-size:14px}
+tr.here td{background:var(--accent-soft)}
+
+main{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
+.step-head{margin-bottom:16px}
+.step-head h2{font-size:24px}
+.step-head p{margin:6px 0 0;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.card h3{font-size:17px;margin-bottom:10px}
+.hint{font-size:14px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:500}
+
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:500}
+.tbl-wrap{overflow-x:auto}
+td input,td textarea,td select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+textarea{resize:vertical;min-height:40px}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:14px;font-weight:500;margin-bottom:4px}
+.field input,.field textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 14px;font-size:14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:3px 9px;font-size:13px}
+.navfoot{display:flex;justify-content:space-between;margin-top:20px}
+
+/* brainstorm */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:720px){.cols{grid-template-columns:1fr}}
+.col{border-radius:var(--radius);padding:14px;border:1px solid var(--line)}
+.col.doom{background:var(--doom-soft)}
+.col.hope{background:var(--hope-soft)}
+.col h3{display:flex;align-items:center;gap:8px}
+.col.doom h3{color:var(--doom)}
+.col.hope h3{color:var(--hope)}
+.col .quote{font-size:13px;color:var(--muted);margin:-6px 0 10px}
+.add{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.add input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.add .row{display:flex;gap:6px}
+.add .row input{flex:1}
+.claim{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:10px 12px;margin-bottom:8px;position:relative}
+.claim.doom{--c:var(--doom)} .claim.hope{--c:var(--hope)}
+.claim .num{font-size:12px;font-weight:700;color:var(--c)}
+.claim .txt{font-weight:500}
+.claim .basis{font-size:14px;color:var(--muted)}
+.claim .x{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--muted);font-size:16px;line-height:1;padding:4px}
+.claim .x:hover{color:var(--doom)}
+.claim .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.claim select{padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:13px}
+.counter{font-size:13px;color:var(--muted)}
+
+/* classify */
+.types{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px}
+.chip-in{border:none;background:transparent;color:inherit;font:inherit;padding:0;min-width:3em;border-bottom:1px dashed transparent}
+.chip-in:hover,.chip-in:focus{border-bottom-color:currentColor;outline:none}
+.chip button{border:none;background:none;color:inherit;padding:0 4px;font-size:15px;line-height:1}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.bucket{background:var(--bg);border:1px dashed var(--line);border-radius:var(--radius);padding:10px}
+.bucket h4{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.bucket.hot{border:2px solid var(--accent);background:var(--accent-soft)}
+.hotbadge{font-size:11px;background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-weight:500}
+.bucket .claim{margin-bottom:6px;padding:8px 10px}
+
+/* rate */
+.rate-row{display:grid;grid-template-columns:1fr auto auto;gap:10px 18px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+@media (max-width:720px){.rate-row{grid-template-columns:1fr}}
+.scale{display:flex;align-items:center;gap:4px}
+.scale .lbl{font-size:12px;color:var(--muted);width:44px}
+.scale button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-weight:700;font-size:14px}
+.scale button.on{background:var(--c,var(--accent));border-color:var(--c,var(--accent));color:#fff}
+.rate-row.doom{--c:var(--doom)} .rate-row.hope{--c:var(--hope)}
+.rate-row .note{grid-column:1/-1}
+.rate-row .note input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:14px}
+.progress{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:6px}
+.progress div{height:100%;background:var(--accent)}
+
+/* quadrant */
+.quad-wrap{display:grid;grid-template-columns:minmax(0,560px) 1fr;gap:16px;align-items:start}
+@media (max-width:860px){.quad-wrap{grid-template-columns:1fr}}
+svg.quad{width:100%;height:auto;display:block}
+.legend{font-size:14px;max-height:520px;overflow:auto}
+.legend li{margin-bottom:6px}
+.legend .tag{display:inline-block;min-width:34px;text-align:center;border-radius:6px;color:#fff;font-size:12px;font-weight:700;padding:1px 4px;margin-right:6px}
+.legend ol{list-style:none;padding:0;margin:0}
+
+/* reflect */
+.range{display:flex;align-items:center;gap:10px}
+.range input{flex:1}
+.range output{font-weight:700;width:28px;text-align:center}
+.sentence{font-size:17px;line-height:2.2}
+.sentence input{border:none;border-bottom:2px solid var(--accent);background:transparent;padding:2px 6px;width:min(320px,100%)}
+
+.tip li{margin-bottom:6px}
+footer{text-align:center;font-size:13px;color:var(--muted);padding:20px 16px 40px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+.toast.show{opacity:1;pointer-events:auto}
+.toast-act{margin-left:12px;border:none;background:none;color:var(--accent-soft);font-weight:700;text-decoration:underline;padding:0}
+
+#printArea{display:none}
+@media print{
+  .top,nav#steps,footer,main,.toast{display:none!important}
+  #printArea{display:block;padding:0 8mm}
+  body{background:#fff;color:#000}
+  .card,.col,.bucket{break-inside:avoid}
+  .pstep{break-before:page}
+  .pstep:first-child{break-before:auto}
+  button,.add{display:none!important}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>AI와 우리의 미래</h1><div class="sub">비관론과 낙관론 조별 토론 활동</div></div>
+  <div class="tools">
+    <div class="seg" id="modeSeg" role="group" aria-label="기록 모드" hidden><button data-act="mode" data-m="personal">개인 기록</button><button data-act="mode" data-m="group">조 기록</button></div>
+    <label class="group-in" id="nameWrap">이름 <input id="pname" placeholder="이름·학번" aria-label="이름과 학번"></label>
+    <label class="group-in">조 <input id="group" placeholder="조 이름" aria-label="조 이름"></label>
+    <div class="timer" id="timer"><span id="tdisp">00:00</span><button id="tstart">시작</button><button id="treset" class="ghost" title="시간 초기화">↺</button></div>
+    <details class="menu" id="menu">
+      <summary>저장·내보내기</summary>
+      <div class="menu-body">
+        <button data-act="export-json">기록 파일로 저장 (JSON)</button>
+        <label>기록 파일 불러오기<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+        <button data-act="export-csv" id="csvBtn">주장 표 내보내기 (CSV)</button>
+        <button data-act="print">전체 인쇄 / PDF</button>
+        <button data-act="reset" class="danger">처음부터 다시 시작</button>
+      </div>
+    </details>
+  </div>
+</header>
+<nav id="steps" aria-label="활동 단계"></nav>
+<main id="main"></main>
+<div id="printArea"></div>
+<footer>기록은 현재 브라우저에 자동 저장됩니다. 제출 또는 기기 간 이동 시 '저장·내보내기'를 사용합니다.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var MODE_KEY = "ai-future-mode";
+var KEYS = {personal:"ai-future-personal-v1", group:"ai-future-group-v1"};
+var DEF = {
+  overview:{t:"개요", min:0},
+  intro:{t:"1. 도입", min:5, who:"개인"},
+  areas:{t:"2. 사회 영역", min:5, who:"조"},
+  brain:{t:"3. 브레인스토밍", min:10, who:"조"},
+  classify:{t:"4. 유형 분류", min:7, who:"조"},
+  rate:{t:"5. 가능성 평가", min:10, who:"조"},
+  discuss:{t:"6. 사분면·자유토론", min:8, who:"조"},
+  reflect:{t:"7. 성찰", min:5, who:"개인"}
+};
+var ORDER = ["intro","areas","brain","classify","rate","discuss","reflect"];
+var MODE_STEPS = {personal:["overview","intro","reflect"], group:["overview","areas","brain","classify","rate","discuss"]};
+var MODE = null, KEY = null, STEPS = [], MEM = {};
+function stepList(m){ return (MODE_STEPS[m]||["choose"]).map(function(id){ return id==="choose" ? {id:"choose",t:"시작",min:0} : {id:id,t:DEF[id].t,min:DEF[id].min}; }); }
+
+var CRITERIA = {
+  "영역별": ["경제·노동","정보·정치","과학·의료","교육","개인·관계","안전·통제"],
+  "시기별": ["이미 일어나는 일","5년 내","장기(20년 이상)"],
+  "원인별": ["기술 자체의 문제","사람의 오용","제도·분배의 문제"],
+  "성격별": ["사실에 기반","추세에 기반한 예측","가정에 기반한 시나리오"]
+};
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function fresh(){
+  return {
+    step:0, group:"", name:"", members:"", mode:MODE,
+    intro:[
+      {time:"학업·업무", text:"", mark:""},
+      {time:"정보·소통", text:"", mark:""},
+      {time:"일상·여가", text:"", mark:""}
+    ],
+    introTalk:"",
+    areas:[
+      {name:"일과 직업", change:"번역·코딩·디자인·상담 등 사무직 업무 일부를 AI가 수행", mine:"", fixed:true},
+      {name:"교육과 배움", change:"AI 튜터, 과제 대필 논란, 평가 방식 변화", mine:"", fixed:true},
+      {name:"정보와 민주주의", change:"딥페이크, 허위정보 대량 생산, 추천 알고리즘의 확증편향", mine:"", fixed:true},
+      {name:"과학과 건강", change:"신약 개발, 단백질 구조 예측, 의료 영상 진단", mine:"", fixed:true},
+      {name:"관계와 정서", change:"AI 동반자·상담 서비스, 정서적 지원과 의존의 문제", mine:"", fixed:true},
+      {name:"", change:"", mine:"", fixed:false}
+    ],
+    claims:[
+      {id:uid(), side:"doom", text:"사무·전문직의 대량 실업과 불평등 심화", basis:"AI가 번역·코딩·문서 작업을 수행하고, 이익이 소수 기업에 집중", type:"", p:0, i:0, note:"", ex:true},
+      {id:uid(), side:"doom", text:"딥페이크·허위정보로 인한 신뢰 붕괴", basis:"누구나 저비용으로 가짜 영상·글을 대량 생산 가능", type:"", p:0, i:0, note:"", ex:true},
+      {id:uid(), side:"hope", text:"과학·의료 혁신의 가속", basis:"알파폴드의 단백질 구조 예측(2024 노벨 화학상), 신약 개발 기간 단축", type:"", p:0, i:0, note:"", ex:true},
+      {id:uid(), side:"hope", text:"새로운 직업과 생산성 향상", basis:"산업혁명·컴퓨터도 일자리를 없앴지만 더 많은 새 직업을 만듦", type:"", p:0, i:0, note:"", ex:true}
+    ],
+    criterion:"",
+    types:[],
+    discussNote:"",
+    reflect:{before:5, after:5, q1:"", q2:"", q3:"", q4:"", q5:"", s1:"", s2:""}
+  };
+}
+
+var INTRO_PH = [
+  "예: 생성형 AI로 문헌 요약·번역, 코딩 보조, 과제 초안 검토",
+  "예: 검색 결과·뉴스 피드 추천, 자동 번역, SNS 콘텐츠 필터링",
+  "예: 영상·음악 추천, 지도 경로 안내, 쇼핑 추천, 사진 자동 보정"
+];
+var S;
+function normalize(st){
+  var f = fresh();
+  var oldIntro = Array.isArray(st.intro) ? st.intro : [];
+  st.intro = f.intro.map(function(r,k){ var o = oldIntro[k]||{}; return {time:r.time, text:o.text||"", mark:o.mark||""}; });
+  var oldAreas = Array.isArray(st.areas) ? st.areas : [];
+  var oldFixed = oldAreas.filter(function(a){ return a && a.fixed; });
+  var custom = oldAreas.filter(function(a){ return a && !a.fixed; });
+  st.areas = f.areas.filter(function(a){ return a.fixed; }).map(function(a,k){
+    return {name:a.name, change:a.change, mine:(oldFixed[k]&&oldFixed[k].mine)||"", fixed:true};
+  }).concat(custom.length ? custom : f.areas.filter(function(a){ return !a.fixed; }));
+  return st;
+}
+function load(){
+  if(!KEY){ S = fresh(); return; }
+  if(MEM[MODE]){ S = MEM[MODE]; return; }
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var d = JSON.parse(raw); if(d && Array.isArray(d.claims)){ S = normalize(Object.assign(fresh(), d)); return; } }
+  }catch(e){}
+  S = fresh();
+}
+var saveT;
+function save(){
+  clearTimeout(saveT);
+  if(!KEY) return;
+  saveT = setTimeout(function(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }, 200);
+}
+function setMode(m){
+  clearTimeout(saveT);
+  if(KEY){ MEM[MODE] = S; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  MODE = (m==="personal"||m==="group") ? m : null;
+  KEY = MODE ? KEYS[MODE] : null;
+  STEPS = stepList(MODE);
+  try{ if(MODE) localStorage.setItem(MODE_KEY, MODE); else localStorage.removeItem(MODE_KEY); }catch(e){}
+  load(); S.mode = MODE;
+  if(S.step >= STEPS.length) S.step = 0;
+  syncHeader(); render(); resetTimer(); window.scrollTo(0,0);
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+var toastT;
+function toast(msg, act, fn){
+  var t=document.getElementById("toast"); t.textContent=msg;
+  if(act){ var bt=document.createElement("button"); bt.textContent=act; bt.className="toast-act"; bt.onclick=function(){ fn(); t.classList.remove("show"); }; t.appendChild(bt); }
+  t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("show");}, act?5000:1800);
+}
+
+function sideClaims(side){ return S.claims.filter(function(c){return c.side===side;}); }
+function label(c){
+  var list = sideClaims(c.side);
+  return (c.side==="doom"?"비":"낙") + (list.indexOf(c)+1);
+}
+function findClaim(id){ for(var k=0;k<S.claims.length;k++){ if(S.claims[k].id===id) return S.claims[k]; } return null; }
+
+/* ---------- step renderers ---------- */
+var R = {};
+
+R.choose = function(){
+  return head("AI와 우리의 미래", "AI의 사회적 영향에 관한 비관론과 낙관론의 주장을 도출·분류하고, 각 주장의 실현 가능성과 영향력을 평가하는 50분 토론 활동입니다. 이 기기에서 작성할 기록을 선택합니다.")+
+  '<div class="choose">'+
+  '<button data-act="mode" data-m="personal"><span class="who">개인 기기</span><b>개인 기록</b>1. 도입 · 7. 성찰<br><span class="hint">활동 시작과 종료 시 개별 작성하며, 개인 PDF로 제출합니다.</span></button>'+
+  '<button data-act="mode" data-m="group"><span class="who">조별 공용 기기 1대</span><b>조 기록</b>2. 사회 영역 ~ 6. 사분면·자유토론<br><span class="hint">조원이 공동으로 작성하며, 조별 PDF·CSV로 제출합니다.</span></button>'+
+  '</div>'+
+  '<div class="card" style="margin-top:16px"><p class="hint" style="margin:0">조별 공용 기기를 사용하는 학생도 개인 기록은 별도로 작성합니다. 상단의 모드 버튼으로 전환할 수 있으며, 두 기록은 각각 저장됩니다.</p></div>';
+};
+
+R.overview = function(){
+  var rows = ORDER.map(function(id){ var d=DEF[id], here = MODE_STEPS[MODE].indexOf(id)>=0;
+    return '<tr class="'+(here?'here':'')+'"><td>'+esc(d.t)+'</td><td>'+d.who+'</td><td>'+d.min+'분</td><td>'+(here?'이 기기':'')+'</td></tr>'; }).join("");
+  var personal = MODE==="personal";
+  var how = personal ?
+    '<li>상단에 이름·학번과 조 이름을 입력합니다.</li>'+
+    '<li>활동 시작 시 <b>1. 도입</b>을 작성합니다. 2~6단계는 조별 공용 기기에서 진행합니다.</li>'+
+    '<li>조별 활동 종료 후 <b>7. 성찰</b>을 작성합니다.</li>'+
+    '<li>작성을 마치면 \'저장·내보내기\'에서 PDF로 저장하여 제출합니다.</li>' :
+    '<li>상단에 조 이름을, 2단계 상단에 조원 이름을 입력합니다.</li>'+
+    '<li>조원 전원이 화면을 공유하며, 입력 담당은 단계별로 교대할 수 있습니다.</li>'+
+    '<li>단계를 이동하면 타이머가 해당 단계의 배정 시간으로 설정됩니다.</li>'+
+    '<li>6단계 종료 후 \'저장·내보내기\'에서 조별 PDF와 CSV를 제출하고, 각자 개인 기기에서 7. 성찰을 작성합니다.</li>';
+  return head(personal?"개인 기록 안내":"조 기록 안내", "개인 활동은 개인 기기에, 조별 활동은 조별 공용 기기 1대에 기록합니다.")+
+  '<div class="card"><h3>진행 순서</h3><div class="tbl-wrap"><table><thead><tr><th>단계</th><th>형태</th><th>시간</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+  '<div class="card"><h3>사용 방법</h3><ul class="tip">'+how+'</ul></div>'+
+  '<div class="card"><h3>학습 목표</h3><ol class="tip">'+
+  '<li>AI가 변화시키는 주요 사회 영역을 설명할 수 있다.</li><li>비관론·낙관론의 주장을 도출하고 기준에 따라 유형화할 수 있다.</li>'+
+  '<li>각 주장의 실현 가능성과 영향력을 근거에 기반해 평가할 수 있다.</li><li>논의 결과를 자신의 전공·진로와 연결하여 입장을 정리할 수 있다.</li></ol></div>'+
+  '<details class="card"><summary><strong>교수자용 안내</strong></summary><ul class="tip" style="margin-top:10px">'+
+  '<li><b>브레인스토밍 규칙:</b> 평가를 보류하고 주장의 양을 우선합니다. 한쪽 관점에 편중된 조에는 반대 관점의 주장 도출을 요청합니다.</li>'+
+  '<li><b>분류 기준은 열어 두기:</b> 조별로 상이한 기준을 허용하고, 기준 설정의 근거를 공유하게 합니다.</li>'+
+  '<li><b>점수보다 이유:</b> 점수는 논의를 위한 도구입니다. 평가가 엇갈리는 항목에서 사실·예측·의견의 구분을 유도합니다.</li>'+
+  '<li><b>중간 입장 인정:</b> "단기 비관, 장기 낙관"과 같이 영역·시기별로 구분된 입장도 타당한 결론으로 인정합니다.</li>'+
+  '<li><b>확장 과제:</b> 사분면 결과에서 주장 하나를 골라 최신 기사·연구 1건으로 가능성 점수를 재평가하는 1쪽 리포트.</li>'+
+  '<li><b>평가 기준 예시:</b> 브레인스토밍 기여 20% · 분류와 평가의 논리성 40% · 토론 참여 20% · 성찰 20%</li>'+
+  '<li><b>제출물:</b> 조마다 조 PDF(필요하면 CSV) 1부, 학생마다 개인 PDF 1부. 개인 PDF에는 이름과 조가 함께 찍혀 조 결과와 맞춰 볼 수 있습니다.</li>'+
+  '<li>인물과 사례는 2026년 10월 기준으로 일반적으로 알려진 입장을 요약했습니다. 수업 전 최신 발언을 확인할 것을 권장합니다.</li>'+
+  '</ul></details>';
+};
+
+R.intro = function(){
+  var rows = S.intro.map(function(r,k){
+    return '<tr><td style="white-space:nowrap">'+esc(r.time)+'</td>'+
+      '<td><textarea rows="2" data-bind="intro.'+k+'.text" placeholder="'+esc(INTRO_PH[k]||"")+'">'+esc(r.text)+'</textarea></td>'+
+      '<td style="width:120px"><select data-bind="intro.'+k+'.mark"><option value="">선택</option>'+
+      opt("○","○ 유용", r.mark)+opt("△","△ 우려", r.mark)+'</select></td></tr>';
+  }).join("");
+  return head("1. 도입: 일상 속 AI 활용 점검", "최근 일주일간 AI가 관여한 활동을 영역별로 기록합니다.")+
+  '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>영역</th><th>AI가 관여한 활동</th><th>평가</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+  '<p class="hint">가장 유용했던 사례에 ○, 가장 우려되는 사례에 △를 표시합니다.</p></div>'+
+  '<div class="card"><h3>경험의 해석</h3><p class="hint">○와 △로 표시한 사례가 비관론과 낙관론 중 어느 쪽의 근거가 될 수 있는지 서술합니다. 이 내용은 조별 활동 시작 시 공유합니다.</p>'+
+  '<textarea rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)" data-bind="introTalk">'+esc(S.introTalk)+'</textarea></div>';
+};
+
+R.areas = function(){
+  var rows = S.areas.map(function(a,k){
+    var name = a.fixed ? '<strong>'+esc(a.name)+'</strong>' : '<input data-bind="areas.'+k+'.name" value="'+esc(a.name)+'" placeholder="새 영역">';
+    var change = a.fixed ? esc(a.change) : '<textarea rows="2" data-bind="areas.'+k+'.change">'+esc(a.change)+'</textarea>';
+    var del = a.fixed ? '' : ' <button class="btn sm" data-act="area-del" data-k="'+k+'" title="행 삭제">삭제</button>';
+    return '<tr><td style="min-width:120px">'+name+'</td><td>'+change+'</td><td><textarea rows="2" data-bind="areas.'+k+'.mine">'+esc(a.mine)+'</textarea>'+del+'</td></tr>';
+  }).join("");
+  return head("2. AI가 바꾸는 사회의 영역", "AI의 사회적 영향에 관한 논의는 주로 아래 영역에 집중됩니다. 동일한 변화가 기회와 위험으로 동시에 해석될 수 있습니다. 누락된 영역은 빈 행에 추가합니다.")+
+  '<div class="card"><label class="field" style="margin:0"><span>조원 이름</span><input data-bind="members" value="'+esc(S.members||"")+'" placeholder="예: 김민지, 이준호, 박서연, 최도윤"></label>'+
+  '<p class="hint" style="margin:8px 0 0">활동 시작 시 각 조원은 도입 단계에서 정리한 유용·우려 사례를 30초 이내로 공유합니다.</p></div>'+
+  '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>영역</th><th>일어나고 있는 변화</th><th>내 삶과의 연결</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+  '<p><button class="btn" data-act="area-add">+ 영역 추가</button></p></div>';
+};
+
+function claimCard(c, opts){
+  opts = opts||{};
+  var h = '<div class="claim '+c.side+'"><div class="num">'+label(c)+(c.ex?' <span class="pill">예시</span>':'')+'</div>'+
+    '<div class="txt">'+esc(c.text)+'</div>'+(c.basis?'<div class="basis">근거: '+esc(c.basis)+'</div>':'');
+  if(opts.typeSelect){
+    h += '<div class="meta"><select data-claim="'+c.id+'" data-field="type"><option value="">미분류</option>'+
+      S.types.map(function(t){return opt(t,t,c.type);}).join("")+'</select></div>';
+  }
+  if(opts.del){ h += '<button class="x" data-act="claim-del" data-id="'+c.id+'" title="삭제" aria-label="삭제">×</button>'; }
+  return h+'</div>';
+}
+
+R.brain = function(){
+  function col(side, title, quote, people){
+    var list = sideClaims(side);
+    return '<div class="col '+side+'"><h3>'+title+' <span class="counter">'+list.length+'개</span></h3>'+
+      '<p class="quote">'+quote+'<br>참고 인물: '+people+'</p>'+
+      '<div class="add" data-side="'+side+'"><input name="text" data-enter="claim" data-side="'+side+'" placeholder="주장" aria-label="주장">'+
+      '<div class="row"><input name="basis" data-enter="claim" data-side="'+side+'" placeholder="근거 (선택)" aria-label="근거"><button class="btn primary" type="button" data-act="claim-add" data-side="'+side+'">추가</button></div></div>'+
+      list.slice().reverse().map(function(c){return claimCard(c,{del:true});}).join("")+'</div>';
+  }
+  return head("3. 브레인스토밍", "조원 전원이 비관론과 낙관론 양측의 주장을 제시합니다. 이 단계에서는 평가를 보류하고 가능한 한 많은 주장을 도출합니다.")+
+  '<div class="card"><p class="hint" style="margin:0"><b>진행:</b> 개별 구상(3분) 후 순서대로 제시하고 입력합니다(7분). 유사한 주장은 통합합니다.<br>'+
+  '<b>참고:</b> 2단계의 사회 영역과 시간 범위(단기·장기)를 교차하여 검토하면 주장의 범위를 넓힐 수 있습니다.</p></div>'+
+  '<div class="cols">'+
+  col("doom","비관론","AI의 발전 속도가 제도와 안전장치의 대응 속도를 앞질러 사회적 위험이 커진다는 관점","제프리 힌턴, 엘리저 유드코프스키")+
+  col("hope","낙관론","AI가 생산성과 과학 발전을 촉진하며, 위험은 제도와 기술로 관리할 수 있다는 관점","얀 르쿤, 앤드루 응")+
+  '</div>';
+};
+
+R.classify = function(){
+  var critOpts = '<option value="">분류 기준 예시 불러오기</option>'+Object.keys(CRITERIA).map(function(k){return opt(k,k+": "+CRITERIA[k].join(" / "),"");}).join("");
+  var chips = S.types.map(function(t,k){return '<span class="chip"><input class="chip-in" data-type-k="'+k+'" value="'+esc(t)+'" style="width:'+chipW(t)+'" aria-label="유형 이름 수정" title="클릭하여 이름 수정"><button data-act="type-del" data-k="'+k+'" title="유형 삭제" aria-label="'+esc(t)+' 삭제">×</button></span>';}).join("") || '<span class="hint">등록된 유형이 없습니다. 직접 추가하거나 예시를 불러옵니다.</span>';
+  var buckets = S.types.concat([""]).map(function(t){
+    var list = S.claims.filter(function(c){return c.type===t;});
+    if(t==="" && list.length===0) return "";
+    var hot = t!=="" && list.some(function(c){return c.side==="doom";}) && list.some(function(c){return c.side==="hope";});
+    return '<div class="bucket'+(hot?' hot':'')+'"><h4><span>'+(t?esc(t):'미분류')+' <span class="counter">'+list.length+'</span></span>'+(hot?'<span class="hotbadge">핵심 쟁점</span>':'')+'</h4>'+
+      list.map(function(c){return claimCard(c,{typeSelect:true});}).join("")+'</div>';
+  }).join("");
+  return head("4. 유형 분류", "도출된 주장을 기준에 따라 묶고 각 유형에 이름을 부여합니다. 분류 기준은 조별로 설정합니다.")+
+  '<div class="card"><h3>조별 분류 유형</h3>'+
+  '<div class="add" id="typeForm" style="flex-direction:row;flex-wrap:wrap"><input name="t" data-enter="type" placeholder="새 유형 이름" aria-label="새 유형 이름" style="flex:1;min-width:160px"><button class="btn primary" type="button" data-act="type-add">유형 추가</button>'+
+  '<select id="critSel" style="padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);max-width:100%">'+critOpts+'</select></div>'+
+  '<div class="types">'+chips+'</div>'+
+  '<p class="hint"><b>예시 수정:</b> 불러온 예시의 유형 이름은 클릭하여 수정할 수 있습니다(Enter로 확정). 불필요한 유형은 ×로 삭제하고, 누락된 유형은 직접 추가합니다. 여러 기준의 예시를 함께 불러올 수 있으며, 기존 유형과 같은 이름으로 수정하면 두 유형이 통합됩니다.<br>'+
+  '각 주장의 유형을 선택하면 해당 묶음으로 이동합니다. 비관론과 낙관론 주장이 함께 포함된 유형은 <b>핵심 쟁점</b>으로 표시됩니다.</p></div>'+
+  '<div class="board">'+buckets+'</div>';
+};
+
+function scale(c, field, name){
+  var h = '<div class="scale"><span class="lbl">'+name+'</span>';
+  for(var n=1;n<=5;n++){ h += '<button class="'+(c[field]===n?'on':'')+'" data-act="score" data-id="'+c.id+'" data-f="'+field+'" data-v="'+n+'" aria-label="'+name+' '+n+'점">'+n+'</button>'; }
+  return h+'</div>';
+}
+R.rate = function(){
+  var done = S.claims.filter(function(c){return c.p&&c.i;}).length;
+  var pct = S.claims.length? Math.round(done/S.claims.length*100):0;
+  var rows = ["doom","hope"].map(function(side){
+    return sideClaims(side).map(function(c){
+      return '<div class="rate-row '+side+'"><div><span class="num" style="color:var(--c);font-weight:700;font-size:13px">'+label(c)+'</span> '+esc(c.text)+(c.type?' <span class="pill">'+esc(c.type)+'</span>':'')+'</div>'+
+        scale(c,"p","가능성")+scale(c,"i","영향력")+
+        '<div class="note"><input data-claim="'+c.id+'" data-field="note" value="'+esc(c.note)+'" placeholder="평가 근거: 점수 차이의 원인, 사실·예측·의견 구분"></div></div>';
+    }).join("");
+  }).join("");
+  return head("5. 가능성 평가", "각 주장의 실현 가능성과 실현 시 사회적 영향력을 1~5점 척도로 평가합니다.")+
+  '<div class="card"><p class="hint" style="margin:0"><b>진행:</b> 조원별 평가를 먼저 공유한 뒤, 평가 차이가 큰 주장부터 근거를 검토하여 조별 합의 점수를 입력합니다.<br>'+
+  '<b>검토 기준:</b> 근거가 사실·예측·의견 중 무엇에 해당하는가? 과거 기술 변화의 사례를 AI에 적용할 수 있는가? 주장을 제기하는 주체의 이해관계는 무엇인가?</p>'+
+  '<div class="progress" title="평가 완료 '+done+'/'+S.claims.length+'"><div style="width:'+pct+'%"></div></div><p class="counter">평가 완료 '+done+' / '+S.claims.length+'</p></div>'+
+  '<div class="card">'+(rows||'<p class="hint">3단계에서 주장을 먼저 입력해야 합니다.</p>')+'</div>';
+};
+
+function quadSvg(){
+  var X0=70,Y0=20,W=440,cell=W/5;
+  var col = getComputedStyle(document.documentElement);
+  var doom = col.getPropertyValue("--doom").trim()||"#c8455b", hope = col.getPropertyValue("--hope").trim()||"#c98a00";
+  var line = col.getPropertyValue("--line").trim()||"#ddd", muted = col.getPropertyValue("--muted").trim()||"#666", ink = col.getPropertyValue("--ink").trim()||"#000";
+  var s = '<svg class="quad" viewBox="0 0 540 540" role="img" aria-label="가능성과 영향력 사분면">';
+  // quadrant backgrounds
+  var q = [
+    {x:X0+W/2,y:Y0,t:"우선 대응 영역",f:0.10},
+    {x:X0,y:Y0,t:"저확률·고영향 위험",f:0.06},
+    {x:X0+W/2,y:Y0+W/2,t:"점진적 적응 영역",f:0.04},
+    {x:X0,y:Y0+W/2,t:"재검토 영역",f:0.02}
+  ];
+  q.forEach(function(r){ s+='<rect x="'+r.x+'" y="'+r.y+'" width="'+W/2+'" height="'+W/2+'" fill="'+ink+'" fill-opacity="'+r.f+'"/>'+
+    '<text x="'+(r.x+W/4)+'" y="'+(r.y+18)+'" text-anchor="middle" font-size="13" fill="'+muted+'">'+r.t+'</text>'; });
+  for(var k=0;k<=5;k++){
+    s+='<line x1="'+(X0+k*cell)+'" y1="'+Y0+'" x2="'+(X0+k*cell)+'" y2="'+(Y0+W)+'" stroke="'+line+'"/>';
+    s+='<line x1="'+X0+'" y1="'+(Y0+k*cell)+'" x2="'+(X0+W)+'" y2="'+(Y0+k*cell)+'" stroke="'+line+'"/>';
+  }
+  s+='<line x1="'+(X0+W/2)+'" y1="'+Y0+'" x2="'+(X0+W/2)+'" y2="'+(Y0+W)+'" stroke="'+muted+'" stroke-width="1.5"/>';
+  s+='<line x1="'+X0+'" y1="'+(Y0+W/2)+'" x2="'+(X0+W)+'" y2="'+(Y0+W/2)+'" stroke="'+muted+'" stroke-width="1.5"/>';
+  for(var n=1;n<=5;n++){
+    s+='<text x="'+(X0+(n-0.5)*cell)+'" y="'+(Y0+W+18)+'" text-anchor="middle" font-size="12" fill="'+muted+'">'+n+'</text>';
+    s+='<text x="'+(X0-10)+'" y="'+(Y0+W-(n-0.5)*cell+4)+'" text-anchor="end" font-size="12" fill="'+muted+'">'+n+'</text>';
+  }
+  s+='<text x="'+(X0+W/2)+'" y="'+(Y0+W+40)+'" text-anchor="middle" font-size="14" fill="'+ink+'">가능성 →</text>';
+  s+='<text transform="translate(22 '+(Y0+W/2)+') rotate(-90)" text-anchor="middle" font-size="14" fill="'+ink+'">영향력 →</text>';
+  var groups = {};
+  S.claims.forEach(function(c){ if(c.p&&c.i){ var key=c.p+"-"+c.i; (groups[key]=groups[key]||[]).push(c); } });
+  var offs=[[0,0],[-22,-22],[22,-22],[-22,22],[22,22],[0,-28],[0,28],[-28,0],[28,0]];
+  Object.keys(groups).forEach(function(key){
+    groups[key].forEach(function(c,j){
+      var o = offs[j%offs.length], cx = X0+(c.p-0.5)*cell+(groups[key].length>1?o[0]:0), cy = Y0+W-(c.i-0.5)*cell+(groups[key].length>1?o[1]:0);
+      var fill = c.side==="doom"?doom:hope;
+      s+='<g><title>'+esc(label(c)+" "+c.text)+'</title><circle cx="'+cx+'" cy="'+cy+'" r="14" fill="'+fill+'"/>'+
+        '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">'+label(c)+'</text></g>';
+    });
+  });
+  return s+'</svg>';
+}
+
+R.discuss = function(){
+  var scored = S.claims.filter(function(c){return c.p&&c.i;});
+  var miss = S.claims.length - scored.length;
+  var doom = getComputedStyle(document.documentElement).getPropertyValue("--doom").trim(), hope = getComputedStyle(document.documentElement).getPropertyValue("--hope").trim();
+  var legend = '<ol>'+S.claims.map(function(c){
+    return '<li><span class="tag" style="background:'+(c.side==="doom"?doom:hope)+'">'+label(c)+'</span>'+esc(c.text)+
+      (c.p&&c.i?' <span class="counter">(가능성 '+c.p+' · 영향력 '+c.i+')</span>':' <span class="counter">(미평가)</span>')+'</li>';
+  }).join("")+'</ol>';
+  return head("6. 사분면과 전체 자유토론", "조별 사분면 결과를 공유한 뒤, 조 간 평가 차이가 큰 주장을 중심으로 토론합니다.")+
+  '<div class="card"><div class="quad-wrap"><div>'+quadSvg()+(miss?'<p class="hint">평가하지 않은 주장 '+miss+'개는 표시되지 않았습니다.</p>':'')+'</div><div class="legend">'+legend+'</div></div></div>'+
+  '<div class="card"><h3>사분면 읽기</h3><div class="tbl-wrap"><table><thead><tr><th>사분면</th><th>의미</th><th>정책적 함의</th></tr></thead><tbody>'+
+  '<tr><td>가능성 높음 · 영향력 큼</td><td>우선 대응 영역</td><td>제도·교육 차원의 선제적 대응</td></tr>'+
+  '<tr><td>가능성 낮음 · 영향력 큼</td><td>저확률·고영향 위험</td><td>지속적 모니터링과 안전성 연구</td></tr>'+
+  '<tr><td>가능성 높음 · 영향력 작음</td><td>점진적 적응 영역</td><td>개인·조직 차원의 적응</td></tr>'+
+  '<tr><td>가능성 낮음 · 영향력 작음</td><td>과대평가 가능성이 있는 기대·우려</td><td>근거의 비판적 재검토</td></tr>'+
+  '</tbody></table></div></div>'+
+  '<div class="card"><h3>토론 주제 (선택)</h3><ol class="tip">'+
+  '<li>동일한 주장에 대해 조별 평가가 달라진 원인은 무엇인가?</li>'+
+  '<li>비관론과 낙관론은 서로 반대인가, 아니면 다른 시기·영역을 말하고 있는가?</li>'+
+  '<li>저확률·고영향 위험에 현재 사회적 자원을 투입하는 것은 정당한가?</li>'+
+  '<li>각자의 전공 분야와 희망 진로는 사분면의 어느 영역에 위치하는가?</li>'+
+  '<li>AI가 창출하는 이익과 비용은 어떻게 배분되어야 공정한가?</li></ol>'+
+  '<label class="field"><span>토론 메모</span><textarea rows="4" data-bind="discussNote">'+esc(S.discussNote)+'</textarea></label></div>';
+};
+
+R.reflect = function(){
+  var r = S.reflect;
+  function ta(key,q){ return '<label class="field"><span>'+q+'</span><textarea rows="2" data-bind="reflect.'+key+'">'+esc(r[key])+'</textarea></label>'; }
+  function rg(key,q){ return '<label class="field"><span>'+q+'</span><div class="range"><span class="counter">비관 1</span><input type="range" min="1" max="10" value="'+r[key]+'" data-bind="reflect.'+key+'" data-num="1"><span class="counter">10 낙관</span><output id="o-'+key+'">'+r[key]+'</output></div></label>'; }
+  return head("7. 개인 성찰", "활동 전후의 입장 변화와 그 근거를 정리합니다.")+
+  '<div class="card">'+rg("before","활동 전 입장")+rg("after","활동 후 입장")+'</div>'+
+  '<div class="card">'+
+  ta("q3","입장 변화(또는 유지)의 근거")+
+  ta("q4","향후 10년간 AI가 본인의 전공·진로에 미칠 주요 영향")+
+  ta("q5","이에 대한 본인의 대응 방안")+'</div>'+
+  '<div class="card">'+ta("s1","입장 요약: AI의 사회적 영향에 대한 본인의 입장과 핵심 근거 (2~3문장)")+'</div>'+
+  '<div class="card"><p class="hint" style="margin:0">작성을 마치면 \'저장·내보내기\'에서 PDF로 저장하여 제출합니다. 이름·학번과 조 이름 입력 여부를 확인합니다.</p></div>';
+};
+
+function chipW(t){ var w=0; for(var k=0;k<t.length;k++){ w += t.charCodeAt(k)>255 ? 1.05 : 0.6; } return Math.max(3, w+0.6).toFixed(1)+"em"; }
+function renameType(k, name){
+  var old = S.types[k]; name = (name||"").trim();
+  if(old===undefined || !name || name===old){ render(true); return; }
+  var dup = S.types.indexOf(name);
+  S.claims.forEach(function(c){ if(c.type===old) c.type=name; });
+  if(dup>=0){ S.types.splice(k,1); toast("'"+old+"'을(를) '"+name+"'에 합쳤습니다"); }
+  else { S.types[k]=name; }
+  save(); render(true);
+}
+function head(t,p){ return '<div class="step-head"><h2>'+t+'</h2>'+(p?'<p>'+p+'</p>':'')+'</div>'; }
+function opt(v,txt,cur){ return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(txt)+'</option>'; }
+
+/* ---------- render ---------- */
+var main = document.getElementById("main");
+function renderNav(){
+  var nav=document.getElementById("steps"); nav.hidden = !MODE;
+  nav.innerHTML = STEPS.map(function(s,k){
+    return '<button data-act="go" data-k="'+k+'" class="'+(k===S.step?'on':'')+'">'+esc(s.t)+(s.min?'<span class="m">'+s.min+'분</span>':'')+'</button>';
+  }).join("");
+}
+function render(keepScroll){
+  var y = window.scrollY;
+  var st = STEPS[S.step];
+  var prev = S.step>0 ? '<button class="btn" data-act="go" data-k="'+(S.step-1)+'">← '+esc(STEPS[S.step-1].t)+'</button>' : '<span></span>';
+  var next = S.step<STEPS.length-1 ? '<button class="btn primary" data-act="go" data-k="'+(S.step+1)+'">'+esc(STEPS[S.step+1].t)+' →</button>' : '<span></span>';
+  main.innerHTML = R[st.id]() + '<div class="navfoot">'+prev+next+'</div>';
+  renderNav();
+  if(keepScroll) window.scrollTo(0,y);
+}
+
+/* ---------- binding ---------- */
+function setPath(path, val){
+  var parts = path.split("."), o = S;
+  for(var k=0;k<parts.length-1;k++){ o = o[parts[k]]; }
+  o[parts[parts.length-1]] = val;
+}
+document.addEventListener("input", function(e){
+  var el = e.target;
+  if(el.id==="group"){ S.group = el.value; save(); return; }
+  if(el.id==="pname"){ S.name = el.value; save(); return; }
+  if(el.classList && el.classList.contains("chip-in")){ el.style.width = chipW(el.value); return; }
+  if(el.dataset.bind){
+    var v = el.dataset.num ? Number(el.value) : el.value;
+    setPath(el.dataset.bind, v); save();
+    if(el.dataset.num){ var out=document.getElementById("o-"+el.dataset.bind.split(".").pop()); if(out) out.textContent=v; }
+  } else if(el.dataset.claim && el.tagName!=="SELECT"){
+    var c = findClaim(el.dataset.claim); if(c){ c[el.dataset.field] = el.value; save(); }
+  }
+});
+document.addEventListener("keydown", function(e){
+  if(e.key==="Enter" && e.target.classList && e.target.classList.contains("chip-in")){ e.preventDefault(); e.target.blur(); }
+  if(e.key==="Escape" && e.target.classList && e.target.classList.contains("chip-in")){ e.target.value = S.types[Number(e.target.dataset.typeK)]||""; e.target.blur(); }
+});
+document.addEventListener("change", function(e){
+  var el = e.target;
+  if(el.classList && el.classList.contains("chip-in")){ renameType(Number(el.dataset.typeK), el.value); return; }
+  if(el.tagName==="SELECT" && el.dataset.claim){
+    var c = findClaim(el.dataset.claim); if(c){ c[el.dataset.field] = el.value; save(); render(true); }
+  } else if(el.tagName==="SELECT" && el.dataset.bind){
+    setPath(el.dataset.bind, el.value); save();
+  } else if(el.id==="critSel" && el.value){
+    var add = CRITERIA[el.value].filter(function(t){return S.types.indexOf(t)<0;});
+    S.types = S.types.concat(add); S.criterion = el.value; save(); render(true);
+    toast(el.value+" 유형 "+add.length+"개를 추가했습니다");
+  } else if(el.id==="importFile" && el.files[0]){
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var d = JSON.parse(fr.result);
+        if(!d || !Array.isArray(d.claims)) throw new Error("형식 오류");
+        if(d.mode && d.mode!==MODE){ toast((d.mode==="group"?"조":"개인")+" 기록 파일입니다. 상단에서 모드를 전환한 뒤 불러옵니다"); el.value=""; return; }
+        S = normalize(Object.assign(fresh(), d)); S.mode=MODE; MEM[MODE]=S; save(); syncHeader(); render(); toast("기록을 불러왔습니다");
+      }catch(err){ toast("불러올 수 없는 파일입니다"); }
+      el.value="";
+    };
+    fr.readAsText(el.files[0]);
+    document.getElementById("menu").open=false;
+  }
+});
+/* adding types and claims: plain buttons + Enter, no form submission (blocked in sandboxed previews) */
+function addType(){
+  var inp = main.querySelector('#typeForm input[name="t"]'); if(!inp) return;
+  var t = inp.value.trim();
+  if(!t){ inp.focus(); return; }
+  if(S.types.indexOf(t)>=0){ toast("이미 있는 유형입니다"); inp.select(); return; }
+  S.types.push(t); save(); render(true);
+  var again = main.querySelector('#typeForm input[name="t"]'); if(again) again.focus();
+}
+function addClaim(side){
+  var box = main.querySelector('.add[data-side="'+side+'"]'); if(!box) return;
+  var ti = box.querySelector('input[name="text"]'), bi = box.querySelector('input[name="basis"]');
+  var text = ti.value.trim();
+  if(!text){ ti.focus(); return; }
+  S.claims.push({id:uid(), side:side, text:text, basis:bi.value.trim(), type:"", p:0, i:0, note:"", ex:false});
+  save(); render(true);
+  var again = main.querySelector('.add[data-side="'+side+'"] input[name="text"]'); if(again) again.focus();
+}
+document.addEventListener("keydown", function(e){
+  var el = e.target; if(e.key!=="Enter" || e.isComposing || e.keyCode===229 || !el.dataset || !el.dataset.enter) return;
+  e.preventDefault();
+  if(el.dataset.enter==="type") addType(); else addClaim(el.dataset.side);
+});
+document.addEventListener("click", function(e){
+  var b = e.target.closest("[data-act]"); if(!b) return;
+  var a = b.dataset.act;
+  if(a==="type-add"){ addType(); return; }
+  if(a==="claim-add"){ addClaim(b.dataset.side); return; }
+  if(a==="mode"){ if(b.dataset.m!==MODE){ setMode(b.dataset.m); toast((MODE==="personal"?"개인":"조")+" 기록으로 바꿨습니다"); } return; }
+  if(a==="go"){ S.step = Number(b.dataset.k); save(); render(); window.scrollTo(0,0); if(!running) resetTimer(); }
+  else if(a==="claim-del"){ var c=findClaim(b.dataset.id); if(c){ var at=S.claims.indexOf(c); S.claims.splice(at,1); save(); render(true);
+      toast("주장을 삭제했습니다", "되돌리기", function(){ S.claims.splice(Math.min(at,S.claims.length),0,c); save(); render(true); }); } }
+  else if(a==="type-del"){ var t=S.types[Number(b.dataset.k)]; S.types.splice(Number(b.dataset.k),1); S.claims.forEach(function(c){ if(c.type===t) c.type=""; }); save(); render(true); }
+  else if(a==="score"){ var c2=findClaim(b.dataset.id); var v=Number(b.dataset.v); c2[b.dataset.f] = c2[b.dataset.f]===v?0:v; save(); render(true); }
+  else if(a==="area-add"){ S.areas.push({name:"",change:"",mine:"",fixed:false}); save(); render(true); }
+  else if(a==="area-del"){ S.areas.splice(Number(b.dataset.k),1); save(); render(true); }
+  else if(a==="export-json"){ download(fname("json"), JSON.stringify(S,null,2), "application/json"); closeMenu(); }
+  else if(a==="export-csv"){ exportCsv(); closeMenu(); }
+  else if(a==="print"){ closeMenu(); window.print(); }
+  else if(a==="reset"){
+    if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="한 번 더 누르면 이 모드의 기록이 모두 지워집니다"; setTimeout(function(){ b.dataset.armed=""; b.textContent="처음부터 다시 시작"; },4000); return; }
+    b.dataset.armed=""; b.textContent="처음부터 다시 시작"; closeMenu(); S=fresh(); S.mode=MODE; MEM[MODE]=S; save(); syncHeader(); render(); resetTimer(); toast("기록을 지웠습니다"); }
+});
+function closeMenu(){ document.getElementById("menu").open=false; }
+function fname(ext){ var d=new Date(); var p=function(n){return String(n).padStart(2,"0");}; var who = MODE==="personal" ? "개인_"+(S.group||"조")+"_"+(S.name||"이름") : "조_"+(S.group||"조"); return ("AI토론_"+who+"_").replace(/[\\/:*?"<>|\s]+/g,"_")+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"."+ext; }
+function download(name, text, type){
+  var blob = new Blob([(type==="text/csv"?"\ufeff":"")+text], {type:type+";charset=utf-8"});
+  var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+function exportCsv(){
+  var q = function(s){ return '"'+String(s==null?"":s).replace(/"/g,'""')+'"'; };
+  var rows = [["조","번호","관점","주장","근거","유형","가능성","영향력","메모"].map(q).join(",")];
+  S.claims.forEach(function(c){ rows.push([S.group,label(c),c.side==="doom"?"비관":"낙관",c.text,c.basis,c.type,c.p||"",c.i||"",c.note].map(q).join(",")); });
+  download(fname("csv"), rows.join("\r\n"), "text/csv");
+}
+
+/* print all steps */
+window.addEventListener("beforeprint", function(){
+  var cur = S.step, html = '<h1 style="font-size:20px">AI와 우리의 미래 · '+(MODE==="personal"?'개인 기록 · '+esc(S.name||"이름 미기재")+' · ':'조 기록 · ')+esc(S.group||"조 미기재")+'</h1>'+(MODE==="group"&&S.members?'<p>조원: '+esc(S.members)+'</p>':'');
+  for(var k=1;k<STEPS.length;k++){ S.step=k; html += '<section class="pstep">'+R[STEPS[k].id]()+'</section>'; }
+  S.step = cur;
+  var pa = document.getElementById("printArea"); pa.innerHTML = html;
+  pa.querySelectorAll("textarea").forEach(function(t){ var d=document.createElement("div"); d.style.whiteSpace="pre-wrap"; d.style.minHeight="1.4em"; d.textContent=t.value; t.replaceWith(d); });
+});
+
+/* ---------- timer ---------- */
+var remain=0, running=false, tick=null;
+var tdisp=document.getElementById("tdisp"), tstart=document.getElementById("tstart"), timerEl=document.getElementById("timer");
+function fmt(s){ var m=Math.floor(Math.abs(s)/60), x=Math.abs(s)%60; return (s<0?"-":"")+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0"); }
+function paint(){ tdisp.textContent=fmt(remain); timerEl.classList.toggle("done", remain<=0 && STEPS[S.step] && STEPS[S.step].min>0); tstart.textContent=running?"일시정지":"시작"; }
+function resetTimer(){ running=false; clearInterval(tick); remain=(STEPS[S.step]?STEPS[S.step].min:0)*60; paint(); }
+tstart.addEventListener("click", function(){
+  if(running){ running=false; clearInterval(tick); }
+  else { running=true; tick=setInterval(function(){ remain--; if(remain===0) toast("시간이 끝났습니다"); paint(); },1000); }
+  paint();
+});
+document.getElementById("treset").addEventListener("click", resetTimer);
+
+function syncHeader(){
+  document.getElementById("group").value = S.group||"";
+  document.getElementById("pname").value = S.name||"";
+  document.getElementById("nameWrap").hidden = MODE!=="personal";
+  document.getElementById("csvBtn").hidden = MODE!=="group";
+  document.getElementById("timer").hidden = !MODE;
+  document.getElementById("group").parentNode.hidden = !MODE;
+  document.getElementById("menu").hidden = !MODE;
+  var seg=document.getElementById("modeSeg"); seg.hidden=!MODE;
+  seg.querySelectorAll("button").forEach(function(x){ var on = x.dataset.m===MODE; x.classList.toggle("on",on); x.setAttribute("aria-pressed",on?"true":"false"); });
+  document.querySelector(".brand .sub").textContent = MODE==="personal"?"개인 기록 · 1. 도입, 7. 성찰":MODE==="group"?"조 기록 · 2~6단계":"비관론과 낙관론 토론 활동";
+}
+
+var saved=null; try{ saved=localStorage.getItem(MODE_KEY); }catch(e){}
+setMode(saved);
+})();
+</script>
+</body>
+</html>
